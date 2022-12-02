@@ -1,0 +1,10 @@
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	$sql_hab_usuario = "update usuarios set estado = 0 and id_grupo = ".@$_SESSION[id_grupo];
+	//echo 'sql_hab_usuario: '.$sql_hab_usuario.'<br />';
+	$execHabUsu=mysql_query($sql_hab_usuario) or die (mysql_error());
+	echo '<script language="javascript">'.chr(10);
+	echo ' window.location.href="lista.php";'.chr(10);
+	echo '</script>'.chr(10);
+?>

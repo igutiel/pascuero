@@ -1,0 +1,114 @@
+<html>
+<head>
+<title>GRABAR USUARIO</title>
+  <meta charset="iso-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Generator" content="Control de Acceso CMLR">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+<center><h1>GRABAR USUARIO</h1>
+<p>Navidad <?php echo date("Y"); ?></p>
+<p>En esta Navidad, los buenos deseos y regalar para compartir entre amigos es necesario una buena lista de deseos.</p>
+<p>Registrse para crear su lista de deseos</p>
+</div>
+<br />
+<hr />
+<br />
+<div class="container">
+<center><h1>GRABAR	 USUARIO</h1></center>
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	echo '<form method="post">';
+	//echo 'boton: '.@$_POST[boton].'<br />';
+	if(@$_POST[boton] === "Grabar") {
+		//echo 'Grabando...<br />';
+		$sql_val_usuario = "select count(1) from usuarios where username = ".@$_POST[usuario]." and id_grupo = ".@$_SESSION[id_grupo];
+		$execValUsuario=mysql_query($sql_val_usuario) or die (mysql_error());
+		$resValUser=0;
+		while($resValUser=mysql_fetch_array($execValUsuario, MYSQL_NUM))
+			$existeUsu=$resValUser[0];
+		//echo 'Existe: '.$existeUsu.'<br />';
+		if($existeUsu == 0) {
+			//echo 'Insertando<br />';
+			$sql_ins_usuario = "insert into usuarios(id_grupo, username, usernamed, run, password, nombre, email, tipo_user, estado, envia_correo) values(".@$_SESSION[id_grupo].', '.@$_POST[usuario].", '".@$_POST[usuariod]."', '".@$_POST[run]."', '1234', '".@$_POST[nombre]."', '".@$_POST[email]."', ".@$_POST[tipo_user].", ".@$_POST[estado].", ".@$_POST[envia_correo].")";
+			//echo 'sql_ins_usuario: '.$sql_ins_usuario.'<br />';
+			$execInsUsu=mysql_query($sql_ins_usuario) or die (mysql_error());
+		}
+		else {
+			$sql_upd_usuario = "update usuarios set nombre = '".@$_POST[nombre]."', email = '".@$_POST[email]."', tipo_user = ".@$_POST[tipo_user].", estado = ".@$_POST[estado].", envia_correo = ".@$_POST[envia_correo]." where username = ".@$_POST[usuario]." and id_grupo = ".@$_SESSION[id_grupo];
+			//echo 'sql_upd_usuario: '.$sql_upd_usuario.'<br />';
+			$execUpdUsu=mysql_query($sql_upd_usuario) or die (mysql_error());
+		}
+		/*echo 'Username: '.@$_POST[usuario].'<br />';
+		echo 'Nombre: '.@$_POST[nombre].'<br />';
+		echo 'E-Mail: '.@$_POST[email].'<br />';
+		echo 'Tipo Usuario: '.@$_POST[tipo_user].'<br />';
+		echo 'Estado: '.@$_POST[estado].'<br />';
+		echo 'Envio Correo: '.@$_POST[envia_correo].'<br />';*/
+	}
+	echo '<input type="submit" class="btn btn-primary" value="Grabar" name="boton">&nbsp;&nbsp;&nbsp;<a href="lista.php" class="btn btn-primary">Salir</a><br /><br />';
+	echo '<table style="cursor: pointer;" id="CursoActivo" class="table-stripped table table-hover table-bordered">'.chr(10);;
+	echo '<tr>'.chr(10);
+	echo '<th><span class="input-group-text" id="basic-addon1">USUARIO</div></th><td><div class="input-group mb-3"><input type="text" name="usuario" value="'.@$_POST[usuario].'" class="form-control" placeholder="Usuario" aria-describedby="basic-addon1"></div></td>';
+	echo '<th><span class="input-group-text" id="basic-addon1">RUN (99999999-X)</div></th><td><div class="input-group mb-3"><input type="text" name="usuariod" value="'.@$_POST[usuariod].'" class="form-control" placeholder="Usuariod" aria-describedby="basic-addon1"></div></td>';
+	echo '<th><span class="input-group-text" id="basic-addon1">RUN (99.999.999-X)</div></th><td><div class="input-group mb-3"><input type="text" name="run" value="'.@$_POST[run].'" class="form-control" placeholder="Run" aria-describedby="basic-addon1"></div></td></tr><tr>';
+	echo '<th><span class="input-group-text" id="basic-addon1">NOMBRE</div></th><td><div class="input-group mb-3"><input type="text" name="nombre" value="'.@$_POST[nombre].'" class="form-control" placeholder="Nombre" aria-describedby="basic-addon1"></div></td>';
+	echo '<th><span class="input-group-text" id="basic-addon1">E-MAIL</div></th><td><div class="input-group mb-3"><input type="text" name="email" value="'.@$_POST[email].'" class="form-control" placeholder="E-Mail" aria-describedby="basic-addon1"></div></td>'.chr(10);
+	echo '<th><span class="input-group-text" id="basic-addon1">TIPO USUARIO</div></th>';
+	echo '<td>';
+	echo '<div class="input-group mb-3">';
+	echo '<select name="tipo_user" class="custom-select">';
+	$sql_sel_tipo_user="select tipo_user, desc_tipo from tipo_user order by tipo_user";
+	$execSelTipoUser=mysql_query($sql_sel_tipo_user) or die (mysql_error());
+	while($resSelTipoUser=mysql_fetch_array($execSelTipoUser, MYSQL_NUM)) {
+		echo '<option value="'.$resSelTipoUser[0].'"';
+		if($resSelTipoUser[0] === @$_POST[tipo_user])
+			echo ' selected';
+		echo '>'.$resSelTipoUser[1].'</option>'.chr(10);
+	}
+	echo '</select>';
+	echo '</td></tr><tr>';
+	echo '<th><span class="input-group-text" id="basic-addon1">ESTADO</div></th>';
+	echo '</div></td>';
+	echo '<td>';
+	echo '<div class="input-group mb-3">';
+	echo '<select name="estado" class="custom-select">';
+	$sel_sel_estado="select estado, desc_estado from estado order by estado";
+	$execSelEstado=mysql_query($sel_sel_estado) or die (mysql_error());
+	while($resSelEstado=mysql_fetch_array($execSelEstado, MYSQL_NUM)) {
+		echo '<option value="'.$resSelEstado[0].'"';
+		if($resSelEstado[0] === @$_POST[estado])
+			echo ' selected';
+		echo '>'.$resSelEstado[1].'</option>'.chr(10);
+	}
+	echo '</select>';
+	echo '</div></td>';
+	echo '<th><span class="input-group-text" id="basic-addon1">ENVIO CORREO</div></th>';
+	echo '<td>';
+	echo '<div class="input-group mb-3">';
+	echo '<select name="envia_correo" class="custom-select">';
+	$sql_sel_envia_correo="select envio_correo, desc_envio from envio_correo order by envio_correo";
+	$execSelEnviaCorreo=mysql_query($sql_sel_envia_correo) or die (mysql_error());
+	while($resSelEnviaCorreo=mysql_fetch_array($execSelEnviaCorreo, MYSQL_NUM)) {
+		echo '<option value="'.$resSelEnviaCorreo[0].'"';
+		if($resSelEnviaCorreo[0] === @$_POST[envia_correo])
+			echo ' selected';
+		echo '>'.$resSelEnviaCorreo[1].'</option>'.chr(10);
+	}
+	echo '</select>';
+	echo '</div></td>';
+	echo '</tr>'.chr(10);
+	echo '</table>'.chr(10);
+?>
+</div>
+</form>
+</body>
+</html>

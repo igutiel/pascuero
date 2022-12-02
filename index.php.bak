@@ -1,0 +1,88 @@
+<html>
+<head>
+<title>LISTA DE DESEOS</title>
+  <meta charset="iso-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Generator" content="Control de Acceso CMLR">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+<link rel="apple-touch-icon" sizes="57x57" href="favicon/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="favicon/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="favicon/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="favicon/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="favicon/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="favicon/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="favicon/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="favicon/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192"  href="favicon/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="favicon/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+<link rel="manifest" href="favicon/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="favicon/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+</head>
+<body>
+<div class="container">
+<center><h1>LISTA DE DESEOS</h1>
+<p>Navidad <?php echo date("Y"); ?></p>
+<p>En esta Navidad, los buenos deseos y regalar para compartir entre amigos es necesario una buena lista de deseos.</p>
+<p>Registrse para crear su lista de deseos</p>
+</div>
+<br />
+<hr />
+<br />
+<div class="container">
+<center><h1>INGRESO DE USUARIOS</h1></center>
+<form method="post">
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	$password="";
+	if(@$_POST[user] != "" && @$_POST[password] != "") {
+		$sql_valida_user="select id_grupo, username, password, tipo_user from usuarios where";
+		$flag=0;
+		if(is_numeric(@$_POST[user])) {
+			$flag=1;
+			$sql_valida_user.=" username = ".@$_POST[user];
+		}
+		if($flag === 1)
+			$sql_valida_user.=" or";
+		$sql_valida_user.=" '".strtoupper(@$_POST[user])."' in (usernamed, run)";
+		//echo 'sql_valida_user: '.$sql_valida_user.'<br />';
+		$execValUser=mysql_query($sql_valida_user) or die (mysql_error());
+		while($resUsers=mysql_fetch_array($execValUser, MYSQL_NUM)) {
+			$id_grupo=$resUsers[0];
+			$username=$resUsers[1];
+			$password=$resUsers[2];
+			$tipo_user=$resUsers[3];
+		}
+		if(!strcmp(@$_POST[password],$password)) {
+			@$_SESSION[id_grupo]=$id_grupo;
+			@$_SESSION[user]=$username;
+			@$_SESSION[password]=@$_POST[password];
+			@$_SESSION[tipo_user]=$tipo_user;
+			header( 'location:lista.php');
+		}
+		else {
+			echo '<script language="javascript">';
+			echo 'alert("Error en la contraseña");';
+			echo '</script>';
+		}
+	}
+	echo '<table style="cursor: pointer;" id="CursoActivo" class="table-stripped table table-hover table-bordered">';
+	echo '<tr><th>RUN<br /><small>(99.999.999-X, 99999999-X)</small></th><th><input type="text" name="user" value="'.@$_POST[user].'" size=30px></th></tr>';
+	echo '<tr><th>CONTRASEÑA</th><th><input type="password" name="password" value="'.@$_POST[password].'" placeholder="Clave por defecto: 1234" size=30px></th></tr>';
+	echo '<tr><th colspan=2><input type="submit" value="Ingresar" class="btn btn-primary"></th></tr>';
+	echo '</table>';
+?>
+</form>
+</div>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<html>
+<head>
+<title>LISTA DE DESEOS</title>
+  <meta charset="iso-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Generator" content="Control de Acceso CMLR">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <!--<link rel="stylesheet" href="css/bootstrap.min.css">-->
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <style>
+  a.disabled {
+   pointer-events: none;
+   cursor: default;
+  }
+  </style>
+<script type="text/javascript">
+function mostrarPassword(){
+		var cambio = document.getElementById("txtPassword");
+		if(cambio.type == "password"){
+			cambio.type = "text";
+			$('.icon').removeClass('fa fa-eye-slash').addClass('fa fa-eye');
+		}else{
+			cambio.type = "password";
+			$('.icon').removeClass('fa fa-eye').addClass('fa fa-eye-slash');
+		}
+	} 
+	
+	$(document).ready(function () {
+	//CheckBox mostrar contraseña
+	$('#show_password').click(function () {
+		$('#Password').attr('type', $(this).is(':checked') ? 'text' : 'password');
+	});
+});
+function mostrarPassword2(){
+		var cambio = document.getElementById("Password");
+		if(cambio.type == "password"){
+			cambio.type = "text";
+			$('.icon').removeClass('fa fa-eye-slash').addClass('fa fa-eye');
+		}else{
+			cambio.type = "password";
+			$('.icon').removeClass('fa fa-eye').addClass('fa fa-eye-slash');
+		}
+	} 
+	
+	$(document).ready(function () {
+	//CheckBox mostrar contraseña
+	$('#ShowPassword').click(function () {
+		$('#txtPassword').attr('type', $(this).is(':checked') ? 'text' : 'password');
+	});
+});
+</script>
+</head>
+<body>
+<div class="container">
+<center><h1>LISTA DE DESEOS</h1>
+<p>Navidad <?php echo date("Y"); ?></p>
+<p>En esta Navidad, los buenos deseos y regalar para compartir entre amigos es necesario una buena lista de deseos.</p>
+<p>Registrse para crear su lista de deseos</p>
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	$sql_cuota = "select valor_cuota from cuota where id_grupo = ".@$_SESSION[id_grupo];
+	$execCuota=mysql_query($sql_cuota) or die (mysql_error());
+	$valor_cuota="";
+	while($resCuota=mysql_fetch_array($execCuota, MYSQL_NUM))
+		$valor_cuota=$resCuota[0];
+	if($valor_cuota > 0)
+		echo '<small><font color="blue">Recuerde que la cuota acordada es de</font> <font color="red">$ '.$valor_cuota.'</font></p>';
+?>
+</div>
+<br />
+<hr />
+<br />
+<div class="container">
+<center><h1>LISTA DE USUARIOS</h1></center>
+<form method="post">
+<?php
+	$resUpdUsu="";
+	if(@$_POST[comando] == "Modificar perfil") {
+		if(@$_POST[password] == @$_POST[password2]) {
+			if(@$_POST[nombre] != "") {
+				$sql_upd_usuario="update usuarios set nombre = '".@$_POST[nombre]."', password='".@$_POST[password]."', email = '".@$_POST[email]."' where '".@$_GET[user]."' in (username, usernamed, run) and id_grupo = ".@$_SESSION[id_grupo];
+				//echo '<br />sql_upd_usuario: '.$sql_upd_usuario.'<br />';
+				$resUpdUsu=mysql_query($sql_upd_usuario) or die (mysql_error());
+			}
+		}
+		else
+			echo 'Contraseñas ingresadas no son iguales';
+	}
+	$sql_usuario="select run, nombre, password, email, tipo_user from usuarios where '".@$_GET[user]."' in (username, usernamed, run) and id_grupo = ".@$_SESSION[id_grupo];
+	$execUser=mysql_query($sql_usuario) or die (mysql_error());
+	echo '<table style="cursor: pointer;" id="CursoActivo" class="table-stripped table table-hover table-bordered">';
+	while($resUser=mysql_fetch_array($execUser, MYSQL_NUM)) {
+		echo '<tr><td>Run</td><td><input type="text" name="user" value="'.$resUser[0].'" size=105 disabled></td><td></td></tr>';
+		echo '<tr><td>Nombre</td><td><input type="text" name="nombre" value="'.$resUser[1].'" size=105></td><td></td></tr>';
+		echo '<tr><td>Password</td><td><input type="password" name="password" value="'.$resUser[2].'" size=105 id="txtPassword"></td>
+            <td><button id="show_password" class="btn btn-primary" type="button" onclick="mostrarPassword()"> <span class="fa fa-eye-slash icon"></span> </button>
+          </td></tr>';
+		echo '<tr><td>Repita Password</td><td><input type="password" name="password2" value="'.$resUser[2].'" size=105 id="Password"></td>';
+		echo '<td><button id="ShowPassword" class="btn btn-primary" type="button"><span class="fa fa-eye-slash icon" onClick="mostrarPassword2()"></span> </button>
+        </td></tr>';
+		echo '<tr><td>E-Mail</td><td><input type="text" name="email" value="'.$resUser[3].'" size=105></td><td></td></tr>';
+		$tipo_usuario=$resUser[4];
+	}
+	echo '</table>';
+	echo '<input type="submit" name="comando" value="Modificar perfil" class="btn btn-primary">&nbsp;&nbsp;&nbsp;<a href="lista.php" name="comando" value="Volver" class="btn btn-primary">Volver</a>';
+	if(@$_GET[user] == @$_SESSION[user]) {
+		echo '&nbsp;&nbsp;&nbsp;<a';
+		$sql_tiene_lista="select count(1) from pareja where id_grupo = ".@$_SESSION[id_grupo];
+		$execTieneLista=mysql_query($sql_tiene_lista) or die (mysql_error());
+		while($resTieneLista=mysql_fetch_array($execTieneLista, MYSQL_NUM))
+			$tiene_lista=$resTieneLista[0];
+		if($tiene_lista == 0)
+			echo ' href="crea_deseos.php" name="comando" value="Lista de deseos" class="btn btn-primary">Crear Lista de deseos</a>';
+		else
+			echo ' name="comando" value="Lista de deseos" class="btn btn-primary">Crear Lista de deseos</a>';
+	}
+	if($tipo_usuario == 1)
+		echo '&nbsp;&nbsp;&nbsp;<a href="administrar.php" name="comando" value="Administrar" class="btn btn-primary">Administrar</a>';
+	if($resUpdUsu != "")
+		echo '<br />Resultado: '.$resUpdUsu.' registros actualizados</br >';
+?>
+</form>
+</div>
+</body>
+</html>

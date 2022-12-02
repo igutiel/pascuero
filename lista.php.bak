@@ -1,0 +1,144 @@
+<html>
+<head>
+<title>LISTA DE DESEOS</title>
+  <meta charset="iso-8859-1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="Generator" content="Control de Acceso CMLR">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <script src="js/popper.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</head>
+<body>
+<div class="container">
+<center><h1>LISTA DE DESEOS</h1>
+<p>Navidad <?php echo date("Y"); ?><br />
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	if(@$_SESSION[password] == 1234) {
+		echo '<script language="javascript">';
+		echo '   alert("Cambie su clave en mantención de perfil");';
+		echo '</script>';
+	}
+	$sql_grupo="select desc_grupo from grupo where id_grupo = ".@$_SESSION[id_grupo];
+	$execGrupo=mysql_query($sql_grupo) or die (mysql_error());
+	while($resGrupo=mysql_fetch_array($execGrupo, MYSQL_NUM))
+		echo $resGrupo[0].'<br />';
+	echo '</p>';
+?>
+<p>En esta Navidad, los buenos deseos y regalar para compartir entre amigos es necesario una buena lista de deseos.</p>
+<p>Registrse para crear su lista de deseos</p>
+<?php
+	$sql_cuota = "select valor_cuota from cuota where id_grupo = ".@$_SESSION[id_grupo];
+	$execCuota=mysql_query($sql_cuota) or die (mysql_error());
+	$valor_cuota="";
+	while($resCuota=mysql_fetch_array($execCuota, MYSQL_NUM))
+		$valor_cuota=$resCuota[0];
+	if($valor_cuota > 0)
+		echo '<small><font color="blue">Recuerde que la cuota acordada es de</font> <font color="red">$ '.$valor_cuota.'</font></p>';
+?>
+</div>
+<br />
+<hr />
+<br />
+<div class="container">
+<center><h1>LISTA DE USUARIOS</h1></center>
+<?php
+	//echo 'user: '.@$_SESSION[user].'<br />';
+	echo '<form id="formName" method="post">';
+	if(@$_POST[grupo] == "")
+		@$_POST[grupo] = @$_SESSION[id_grupo];
+	$sql_count_grupos="select count(1) FROM `usuarios` WHERE username = ".@$_SESSION[user];
+	$execCountGrupo=mysql_query($sql_count_grupos) or die (mysql_error());
+	$iFila=0;
+	while($resCountGrupo=mysql_fetch_array($execCountGrupo, MYSQL_NUM))
+		$iFila=$resCountGrupo[0];
+	if($iFila > 1) {
+		echo ' <div class="form-group">';
+		echo '    <label for="exampleFormControlSelect1">Grupo</label>';
+		echo '<select name="grupo" class="form-control" aria-label="Elija grupo" onChange="submit()">';
+		$sql_grupos="SELECT usu.id_grupo, grp.desc_grupo FROM `usuarios` usu join grupo grp on grp.id_grupo = usu.id_grupo WHERE usu.username = ".@$_SESSION[user]." ORDER BY usu.`id_grupo` ASC ";
+		$execGrupos=mysql_query($sql_grupos) or die (mysql_error());
+		while($resGrupos=mysql_fetch_array($execGrupos, MYSQL_NUM)) {
+			echo '<option value="'.$resGrupos[0].'"';
+			if($resGrupos[0] === @$_POST[grupo]) {
+				echo ' selected';
+				@$_SESSION[id_grupo] = @$_POST[grupo];
+			}
+			echo '>'.$resGrupos[1].'</option>';
+		}
+		echo '</select>';
+		echo '</div>';
+	}
+	echo '<a href="perfil.php?user='.@$_SESSION[user].'" class="btn btn-primary">Mantención Perfil</a>'.(@$_SESSION[tipo_user]==1?'&nbsp;&nbsp;&nbsp;<a href="agregar_user.php" class="btn btn-primary">Agregar</a>':'').'&nbsp;&nbsp;&nbsp;<a href="index.php" class="btn btn-primary">Salir</a>';
+	$flag_habilitado=0;
+	if(@$_SESSION[tipo_user] == 1) {
+		echo '<div class="form-check">';
+		echo '<input class="form-check-input" type="checkbox" name="habilitado" onChange="document.getElementById(\'formName\').submit()" value="" id="flexCheckDefault"';
+		if(@$_POST[habilitado] === "") {
+			echo ' checked';
+			$flag_habilitado = 1;
+		}
+		echo '>';
+		echo '  <label class="form-check-label" for="flexCheckDefault">';
+		echo 'Habilitados / Inhabilitados';
+		echo '</label>';
+		echo '</div>';
+	}
+	echo '<br /><br />';
+	//echo 'Estado habilitado: '.$flag_habilitado.'<br />';
+	$sql_lista_usuarios="select usu.username, usu.nombre, usu.email, est.desc_estado, eco.desc_envio from usuarios usu join estado est on est.estado = usu.estado join envio_correo eco on eco.envio_correo = usu.envia_correo where usu.id_grupo = ".@$_SESSION[id_grupo];
+	if($flag_habilitado === 0)
+		$sql_lista_usuarios.=" and usu.estado = 0";
+	$execUsers=mysql_query($sql_lista_usuarios) or die (mysql_error());
+	echo '<table style="cursor: pointer;" id="CursoActivo" class="table-stripped table table-hover table-bordered">'.chr(10);;
+	echo '<tr>'.chr(10);;
+	echo '<th>';
+	echo '</th>';
+	echo '<th>Usuario</th><th>Nombre</th><th>E-Mail</th><th>';
+	echo 'Estado<br />';
+	if(@$_SESSION[tipo_user] == 1) {
+		echo '<a href="habilitar_todos.php"><ion-icon src="img/checkmark-outline.svg"></ion-icon></a>';
+		echo '<a href="deshabilitar_todos.php"><ion-icon src="img/close-outline.svg"></ion-icon></a>';
+	}
+	echo '</th><th>';
+	//echo 'Envio Correo<br />';
+	if(@$_SESSION[tipo_user] == 1) {
+		echo '<a href="envia_correo_todos.php"><ion-icon src="img/mail-outline.svg"></ion-icon></a>&nbsp;';
+		echo '<a href="no_envia_correo_todos.php"><ion-icon src="img/send-outline.svg"></ion-icon></a>';
+	}
+	echo '</th></tr>'.chr(10);
+	while($resUsers=mysql_fetch_array($execUsers, MYSQL_NUM)) {
+		echo '<tr>'.chr(10);
+		if(@$_SESSION[tipo_user] == 1) {
+			echo '<td>';
+			echo '<a href="grabar_user.php?usuario='.$resUsers[0].'"><ion-icon src="img/save-outline.svg"></ion-icon></a>';
+			echo '<a href="borrar_user.php?usuario='.$resUsers[0].'"><ion-icon src="img/trash-outline.svg"></ion-icon></a>';
+			echo '<a href="agregar_user.php?usuario='.$resUsers[0].'"><ion-icon src="img/add-outline.svg"></ion-icon></a>';
+			echo '</td>';
+		}
+		echo "<td><a href='lista_deseo.php?user=".$resUsers[0]."'>".$resUsers[0]."</a></td><td>".$resUsers[1]."</td><td>".$resUsers[2].'</td><td>';
+		if(@$_SESSION[tipo_user] == 1)
+			echo '<a href="cambio_estado.php?username='.$resUsers[0].'">';
+		echo $resUsers[3];
+		if(@$_SESSION[tipo_user] == 1)
+			echo '</a>';
+		echo '</td><td>';
+		if(@$_SESSION[tipo_user] == 1)
+			echo '<a href="cambio_correo.php?username='.$resUsers[0].'">';
+		echo $resUsers[4];
+		if(@$_SESSION[tipo_user] == 1)
+			echo '</a>';
+		echo '</td></tr>'.chr(10);
+	}
+	echo '</table>'.chr(10);
+	echo '</form>';
+?>
+</div>
+</body>
+</html>

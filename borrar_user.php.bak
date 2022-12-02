@@ -1,0 +1,10 @@
+<?php
+	include "conexion/conectar.php";
+	session_start();
+	$sql_del_usuario = "delete from usuarios where username = ".@$_GET[usuario];
+	//echo 'sql_del_usuario: '.$sql_del_usuario.'<br />';
+	$execDelUsu=mysql_query($sql_del_usuario) or die (mysql_error());
+	echo '<script language="javascript">'.chr(10);
+	echo ' window.location.href="lista.php";'.chr(10);
+	echo '</script>'.chr(10);
+?>
